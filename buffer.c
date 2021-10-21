@@ -14,8 +14,6 @@ int insert_item(buffer_item item);
 
 int remove_item(buffer_item *item);
 
-unsigned int producer_wait, consumer_wait;
-
 buffer_item buffer[BUFFER_SIZE];
 
 pthread_mutex_t mutex;
@@ -62,7 +60,6 @@ int main(int argc, char *argv[])
 /* 6. Exit */
 
 	int sleepTime, producerThreads, consumerThreads;
-	unsigned int short_wait, long_wait;
 	int i, j;
 
 	if(argc != 5)
@@ -79,6 +76,16 @@ int main(int argc, char *argv[])
 	/* Initialize the synchronization tools */
 
 	/* Create the producer and consumer threads */
+	for (int i=0; i<producerThreads; i++)
+	{
+		
+	}
+
+	
+	for (int i=0; i<consumerThreads; i++)
+	{
+		
+	}
 
 	/* Sleep for user specified time */
 	sleep(sleepTime);
@@ -89,15 +96,33 @@ int main(int argc, char *argv[])
 void *producer(void *param)
 {
 	/* Implementation of the producer thread -- refer to Figure 5.26 on page 256 */
-	buffer_item item;
+	buffer_item item = (buffer_item) param;
 	while (TRUE)
 	{
-		global producer_wait
-		sleep(producer_wait);
+		if (insert_item(item))
+		{
+			printf("error producing item %d\n", item);
+		}
+		else
+		{
+			printf("producer produced %d\n", item);
+		}
 	}
 }
 
 void *consumer(void *param)
 {
 	/* Implementation of the consumer thread -- refer to Figure 5.26 on page 256 */
+	buffer_item item;
+	while (TRUE)
+	{
+		if (remove_item(&item))
+		{
+			printf("error consuming item %d\n", item);
+		}
+		else
+		{
+			printf("consumer comsumed %d\n", item);
+		}
+	}
 }
