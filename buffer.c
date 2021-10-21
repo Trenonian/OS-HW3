@@ -14,6 +14,7 @@ int insert_item(buffer_item item);
 
 int remove_item(buffer_item *item);
 
+unsigned int producer_wait, consumer_wait;
 
 buffer_item buffer[BUFFER_SIZE];
 
@@ -28,7 +29,11 @@ void *consumer(void *param);
 
 int insert_item(buffer_item item)
 {
-    /* Implementation of the insert_item() function */
+    /*
+		insert item into buffer
+		return 0 if successful
+		return -1 if not successful
+	*/
 
 	return 0;
 }
@@ -36,7 +41,12 @@ int insert_item(buffer_item item)
 
 int remove_item(buffer_item *item)
 {
-	/* Implementation of the remove_item function */
+	/*
+		remove object from buffer
+		place it in item
+		return 0 if successful
+		return -1 if not successful
+	*/
 
 	return 0;
 }
@@ -52,6 +62,7 @@ int main(int argc, char *argv[])
 /* 6. Exit */
 
 	int sleepTime, producerThreads, consumerThreads;
+	unsigned int short_wait, long_wait;
 	int i, j;
 
 	if(argc != 5)
@@ -78,7 +89,12 @@ int main(int argc, char *argv[])
 void *producer(void *param)
 {
 	/* Implementation of the producer thread -- refer to Figure 5.26 on page 256 */
-
+	buffer_item item;
+	while (TRUE)
+	{
+		global producer_wait
+		sleep(producer_wait);
+	}
 }
 
 void *consumer(void *param)
