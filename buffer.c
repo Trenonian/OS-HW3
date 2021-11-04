@@ -6,10 +6,9 @@
 #include <time.h>
 
 #define TRUE 1
+#define FALSE 0
 typedef int buffer_item;
 #define BUFFER_SIZE 8
-
-int USE_MICROSECONDS = 1;
 
 char FIRST_INITIAL = 'm';
 char *LAST_NAME = "anderson";
@@ -79,6 +78,7 @@ int main(int argc, char *argv[])
 	produce_value = START_NUMBER;
 
 	/* Create the producer and consumer threads */
+
 	pthread_t producers[producerThreads];
 	for (int i = 0; i < producerThreads; i++)
 	{
@@ -95,16 +95,8 @@ int main(int argc, char *argv[])
 		pthread_create(&consumers[i], NULL, consumer, data);
 	}
 
-	if (USE_MICROSECONDS == 0)
-	{
-		/* Sleep for user specified number of seconds */
-		sleep(sleepTime * 1000000);
-	}
-	else
-	{
-		/* Sleep for user specified number of milliseconds */
-		usleep(sleepTime);
-	}
+	/* Sleep for user specified number of seconds */
+	sleep(sleepTime);
 
 	sem_destroy(&empty);
 	sem_destroy(&full);
@@ -129,13 +121,19 @@ void *producer(void *param)
 	buffer_item item;
 	while (TRUE)
 	{
-		/* generate/retrieve item */
+		/* sleep for a random period of time */
+		sleep(rand() % 5 + 1);
+
+		/*
+			generate/retrieve item
+			ensures no duplicates
+		*/
 		pthread_mutex_lock(&value_mutex);
 		item = produce_value++;
+		pthread_mutex_unlock(&value_mutex);
 
 		/* insert item */
 		insert_item(item, index);
-		pthread_mutex_unlock(&value_mutex);
 	}
 }
 
@@ -148,6 +146,9 @@ void *consumer(void *param)
 	buffer_item item;
 	while (TRUE)
 	{
+		/* sleep for a random period of time */
+		sleep(rand() % 5 + 1);
+
 		remove_item(&item, index);
 		/* process item */
 	}
@@ -161,32 +162,36 @@ int insert_item(buffer_item item, int index)
 		return -1 if not successful
 	*/
 
-	// if (sem_wait(&empty) != 0)
-	// {
-	// 	return -1;
-	// }
-	// if (pthread_mutex_lock(&mutex) != 0)
-	// {
-	// 	return -1;
-	// }
-	sem_wait(&empty);
-	pthread_mutex_lock(&mutex);
+	if (sem_wait(&empty) != 0)
+	{
+		return -1;
+	}
+	if (pthread_mutex_lock(&mutex) != 0)
+	{
+		return -1;
+	}
+
+	// sem_wait(&empty);
+	// pthread_mutex_lock(&mutex);
 
 	buffer[insertPointer] = item;
 	insertPointer++;
 	insertPointer %= BUFFER_SIZE;
 	printf("Producer %c%s_P%d produced %d\n",
 		   FIRST_INITIAL, LAST_NAME, index, item);
-	// if (sem_post(&full) != 0)
-	// {
-	// 	return -1;
-	// }
-	// if (pthread_mutex_unlock(&mutex) != 0)
-	// {
-	// 	return -1;
-	// }
-	sem_post(&full);
-	pthread_mutex_unlock(&mutex);
+
+	if (pthread_mutex_unlock(&mutex) != 0)
+	{
+		return -1;
+	}
+	if (sem_post(&full) != 0)
+	{
+		return -1;
+	}
+
+	// pthread_mutex_unlock(&mutex);
+	// sem_post(&full);
+
 	return 0;
 }
 
@@ -198,31 +203,36 @@ int remove_item(buffer_item *item, int index)
 		return 0 if successful
 		return -1 if not successful
 	*/
-	// if (sem_wait(&full) != 0)
-	// {
-	// 	return -1;
-	// }
-	// if (pthread_mutex_lock(&mutex) != 0)
-	// {
-	// 	return -1;
-	// }
-	sem_wait(&full);
-	pthread_mutex_lock(&mutex);
+
+	if (sem_wait(&full) != 0)
+	{
+		return -1;
+	}
+	if (pthread_mutex_lock(&mutex) != 0)
+	{
+		return -1;
+	}
+
+	// sem_wait(&full);
+	// pthread_mutex_lock(&mutex);
+
 	*item = buffer[removePointer];
 	removePointer++;
 	removePointer %= BUFFER_SIZE;
 	printf("Consumer %c%s_C%d comsumed %d\n",
 		   FIRST_INITIAL, LAST_NAME, index, *item);
-	// if (sem_post(&empty) != 0)
-	// {
-	// 	return -1;
-	// }
-	// if (pthread_mutex_unlock(&mutex) != 0)
-	// {
-	// 	return -1;
-	// }
-	sem_post(&empty);
-	pthread_mutex_unlock(&mutex);
+
+	if (pthread_mutex_unlock(&mutex) != 0)
+	{
+		return -1;
+	}
+	if (sem_post(&empty) != 0)
+	{
+		return -1;
+	}
+
+	// pthread_mutex_unlock(&mutex);
+	// sem_post(&empty);
 
 	return 0;
 }
