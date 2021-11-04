@@ -54,4 +54,3 @@ dkms.conf
 ~$*.docx
 buffer
 example.c
-test.c
