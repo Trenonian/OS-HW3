@@ -150,7 +150,6 @@ void *consumer(void *param)
 		sleep(rand() % 5 + 1);
 
 		remove_item(&item, index);
-		/* process item */
 	}
 }
 
@@ -162,17 +161,8 @@ int insert_item(buffer_item item, int index)
 		return -1 if not successful
 	*/
 
-	if (sem_wait(&empty) != 0)
-	{
-		return -1;
-	}
-	if (pthread_mutex_lock(&mutex) != 0)
-	{
-		return -1;
-	}
-
-	// sem_wait(&empty);
-	// pthread_mutex_lock(&mutex);
+	sem_wait(&empty);
+	pthread_mutex_lock(&mutex);
 
 	buffer[insertPointer] = item;
 	insertPointer++;
@@ -180,17 +170,8 @@ int insert_item(buffer_item item, int index)
 	printf("Producer %c%s_P%d produced %d\n",
 		   FIRST_INITIAL, LAST_NAME, index, item);
 
-	if (pthread_mutex_unlock(&mutex) != 0)
-	{
-		return -1;
-	}
-	if (sem_post(&full) != 0)
-	{
-		return -1;
-	}
-
-	// pthread_mutex_unlock(&mutex);
-	// sem_post(&full);
+	pthread_mutex_unlock(&mutex);
+	sem_post(&full);
 
 	return 0;
 }
@@ -200,21 +181,10 @@ int remove_item(buffer_item *item, int index)
 	/*
 		remove object from buffer
 		place it in item
-		return 0 if successful
-		return -1 if not successful
 	*/
 
-	if (sem_wait(&full) != 0)
-	{
-		return -1;
-	}
-	if (pthread_mutex_lock(&mutex) != 0)
-	{
-		return -1;
-	}
-
-	// sem_wait(&full);
-	// pthread_mutex_lock(&mutex);
+	sem_wait(&full);
+	pthread_mutex_lock(&mutex);
 
 	*item = buffer[removePointer];
 	removePointer++;
@@ -222,17 +192,8 @@ int remove_item(buffer_item *item, int index)
 	printf("Consumer %c%s_C%d comsumed %d\n",
 		   FIRST_INITIAL, LAST_NAME, index, *item);
 
-	if (pthread_mutex_unlock(&mutex) != 0)
-	{
-		return -1;
-	}
-	if (sem_post(&empty) != 0)
-	{
-		return -1;
-	}
-
-	// pthread_mutex_unlock(&mutex);
-	// sem_post(&empty);
+	pthread_mutex_unlock(&mutex);
+	sem_post(&empty);
 
 	return 0;
 }
